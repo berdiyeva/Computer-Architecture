@@ -2,12 +2,29 @@
 
 import sys
 
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.register = [0] * 8  # 8 general-purpose registers
+        self.ram = [0] * 256     # hold 256 bytes of memory 
+        self.pc = 0              # add properties for any internal registers
+        self.running = False
+
+    # should accept the address to read 
+    # and return the value stored there.
+    def ram_read(self, MAR):
+        return self.ram[MAR]
+
+    # should accept a value to write, 
+    # and the address to write it to.
+    def ram_write(self, MAR, MDR):
+        self.ram[MAR] = MDR
 
     def load(self):
         """Load a program into memory."""
@@ -62,4 +79,21 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+        while running:
+            IR = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            if IR == LDI:
+                self.ram_write(operand_a, operand_b)
+                self.pc += 3
+            elif IR == PRN:
+                # print
+                print(self.ram_read(operand_a))
+                self.pc += 2 # increment pc by 2 to skip the argument
+            elif IR == HLT:
+                running = False
+            else:
+                print('unknown instruction')
+                running = False
+
