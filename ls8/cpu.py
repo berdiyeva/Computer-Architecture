@@ -13,7 +13,6 @@ CALL = 0b01010000
 RET = 0b00010001
 ADD = 0b10100000
 
-# SP = 0b00000111
 
 class CPU:
     """Main CPU class."""
@@ -58,20 +57,10 @@ class CPU:
     def load(self):
         """Load a program into memory."""
 
-        # print(sys.argv[1])
-        # with open(sys.argv[1]) as file:
-        #     for line in file:
-        #          # Split the line on the comment character (#)
-        #         line = line.split("#")[0].strip()
-        #         if line == "":
-        #             continue
-        #         instruction = int(line, 2)
-        #         self.ram[address] = instruction
-        #         address += 1
-
         # passing file name to read 
         # commands  
         # stack instructions
+
         address = 0
         # file = sys.argv[1]
 
@@ -96,8 +85,7 @@ class CPU:
             sys.exit(1)
 
 
-
-    def alu(self, op, reg_a, reg_b):
+    def alu(self, op, reg_a, reg_b):C
         """ALU operations."""
 
         if op == "ADD":
