@@ -85,7 +85,7 @@ class CPU:
             sys.exit(1)
 
 
-    def alu(self, op, reg_a, reg_b):C
+    def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
