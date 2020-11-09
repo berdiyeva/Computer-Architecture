@@ -2,7 +2,6 @@
 
 import sys
 
-
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
@@ -13,25 +12,29 @@ CALL = 0b01010000
 RET = 0b00010001
 ADD = 0b10100000
 
+CMP = 0b10100111
+JMP = 0b01010100
+JEQ = 0b01010101
+JNE = 0b01010110
 
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        self.reg = [0] * 8  # 8 general-purpose registers
-        self.ram = [0] * 256     # hold 256 bytes of memory 
-        self.pc = 0              # add properties for any internal registers
-        self.running = True 
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+        self.running = True
         self.branchtable = {}
         self.stack_pointer = 0xf4
-        self.reg[7] = self.stack_pointer # Initialize the stack pointer. R7 is the dedicated stack pointer.
+        self.reg[7] = self.stack_pointer
 
         # Flags
         self.E = None
         self.L = None
         self.G = None
-      
+
         # Instructions
         self.branchtable[HLT] = self.handleHLT
         self.branchtable[LDI] = self.handleLDI
@@ -42,48 +45,20 @@ class CPU:
         self.branchtable[ADD] = self.handleADD
         self.branchtable[RET] = self.handleRET
         self.branchtable[CALL] = self.handleCALL
-      
 
-    # should accept the address to read 
-    # and return the value stored there.
-    def ram_read(self, MAR):
-        return self.ram[MAR]
+        # Sprint Challenge
+        self.branchtable[CMP] = self.handleCMP
+        self.branchtable[JMP] = self.handleJMP
+        self.branchtable[JEQ] = self.handleJEQ
+        self.branchtable[JNE] = self.handleJNE
 
-    # should accept a value to write, 
-    # and the address to write it to.
-    def ram_write(self, MAR, MDR):
-        self.ram[MAR] = MDR
 
-    def load(self):
-        """Load a program into memory."""
 
-        # passing file name to read 
-        # commands  
-        # stack instructions
+    def ram_read(self, i):
+        return self.ram[i]
 
-        address = 0
-        # file = sys.argv[1]
-
-        if len(sys.argv) != 2:
-            print("Wrong number of arguments, please pass file name")
-            sys.exit(1)
-
-        try:
-            with open(sys.argv[1]) as f:
-                for line in f:
-                    try:
-                        line = line.split("#", 1)[0] # slip the line on the comment char
-                        line = int(line, 2) # initialize base of 2
-                        self.ram[address] = line
-                        address += 1
-                    except ValueError:
-                        pass
-
-        
-        except FileNotFoundError:
-            print(f"Could not find file {sys.argv[1]}")
-            sys.exit(1)
-
+    def ram_write(self, i, MDR):
+        self.ram[i] = MDR
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -94,6 +69,30 @@ class CPU:
         else:
             raise Exception("Unsupported ALU operation")
 
+    def load(self):
+        """Load a program into memory."""
+
+        address = 0
+        file = sys.argv[1]
+
+        if len(sys.argv) != 2:
+            print("usage: comp.py filename")
+            sys.exit(1)
+
+        try:
+            with open(sys.argv[1]) as f:
+                for line in f:
+                    try:
+                        line = line.split("#", 1)[0]
+                        line = int(line, 2)
+                        self.ram[address] = line
+                        address += 1
+                    except ValueError:
+                        pass
+
+        except FileNotFoundError:
+            print(f"Couldn't find file {sys.argv[1]}")
+            sys.exit(1)
 
     def trace(self):
         """
@@ -114,7 +113,6 @@ class CPU:
             print(" %02X" % self.reg[i], end='')
 
         print()
-        
 
     def handleHLT(self, a=None, b=None):
         # print("HLT")
@@ -127,7 +125,7 @@ class CPU:
         self.reg[a] = b
         self.pc += 3
 
-    def handlePRN(self, a, b=None):
+    def handlePRN(self, a):
         # print("PRN")
         # print value from specified register
         print(self.reg[a])
@@ -191,6 +189,48 @@ class CPU:
         self.ram[self.stack_pointer] = rc
 
         self.pc = self.reg[a]
+
+
+    # Sprint Challenge
+    
+
+    def handleJMP(self, a, b):
+        # print("JMP")
+        self.pc = self.reg[a]
+
+    def handleJEQ(self, a, b):
+        # print("JEQ")
+        if self.E == 1:
+            self.handleJMP(a, b)
+        else:
+            self.pc += 2
+
+    def handleJNE(self, a, b):
+        # print("JNE")
+        if self.E == 0:
+            self.handleJMP(a, b)
+        else:
+            self.pc += 2
+
+    def handleCMP(self, a, b):
+        # print("CMP")
+
+        if self.reg[a] == self.reg[b]:
+            self.E = 1
+        else:
+            self.E = 0
+
+        if self.reg[a] < self.reg[b]:
+            self.L = 1
+        else:
+            self.L = 0
+
+        if self.reg[a] > self.reg[b]:
+            self.G = 1
+        else:
+            self.G = 0
+
+        self.pc += 3
 
 
     def run(self):
