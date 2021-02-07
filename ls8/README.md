@@ -308,15 +308,7 @@ If you run `python3 ls8.py examples/stack.ls8` you should see the output:
 2
 4
 1
-```
-
-## Step 11: Implement Subroutine Calls
-
-Back in the old days, functions were called _subroutines_. In machine code,
-subroutines enable you to jump to any address with the `CALL` instruction, and
-then return back to where you called from with the `RET` instruction. This
-enables you to create reusable functions.
-
+``` function with appropriate arguments to get the
 Subroutines have many similarities to functions in higher-level languages. Just
 as a function in C, JavaScript or Python will jump from the function call, to
 its definition, and then return back to the line of code following the call,
